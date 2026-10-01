@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   AppWindow,
   Check,
@@ -12,6 +12,11 @@ import {
   Palette,
   Rocket,
   Settings2,
+  Monitor,
+  Smartphone,
+  BookOpen,
+  BriefcaseBusiness,
+  Music2,
   Sparkles,
   TerminalSquare,
   Wrench,
@@ -49,6 +54,11 @@ const presets: Preset[] = [
   { name: 'Developer tool', description: '1024 × 720 · maximized', icon: TerminalSquare, patch: { window: { ...defaultConfig.window, width: 1024, height: 720, maximized: true } } },
   { name: 'Game launcher', description: '1366 × 768 · immersive', icon: Gamepad2, patch: { window: { ...defaultConfig.window, width: 1366, height: 768, resizable: true, hideMenuBar: undefined } as BuilderConfig['window'] } },
   { name: 'Presentation', description: '1440 × 900 · clean chrome', icon: Rocket, patch: { window: { ...defaultConfig.window, width: 1440, height: 900, hideMenuBar: undefined } as BuilderConfig['window'] } },
+  { name: 'Wide workspace', description: '1600 × 1000 · spacious', icon: Monitor, patch: { window: { ...defaultConfig.window, width: 1600, height: 1000 } } },
+  { name: 'Mobile companion', description: '430 × 860 · portrait', icon: Smartphone, patch: { window: { ...defaultConfig.window, width: 430, height: 860, resizable: false } } },
+  { name: 'Reading room', description: '960 × 1200 · distraction-free', icon: BookOpen, patch: { window: { ...defaultConfig.window, width: 960, height: 1200 } } },
+  { name: 'Business app', description: '1280 × 800 · production-ready', icon: BriefcaseBusiness, patch: { window: { ...defaultConfig.window, width: 1280, height: 800, maximized: false } } },
+  { name: 'Media player', description: '1100 × 700 · immersive', icon: Music2, patch: { window: { ...defaultConfig.window, width: 1100, height: 700, frameless: true } } },
 ]
 
 export function BuilderWorkspace() {
@@ -81,6 +91,12 @@ export function BuilderWorkspace() {
     if (!icon) return null
     return URL.createObjectURL(new Blob([new Uint8Array(icon.data)], { type: `image/${icon.ext === 'svg' ? 'svg+xml' : icon.ext}` }))
   }, [icon])
+
+  useEffect(() => {
+    return () => {
+      if (iconPreview) URL.revokeObjectURL(iconPreview)
+    }
+  }, [iconPreview])
 
   const jumpToStep = (step: number) => setActiveStep(Math.max(0, Math.min(step, 3)))
   const onProjectChange = (next: ParsedProject | null, nextEntry: string) => {
@@ -125,8 +141,8 @@ export function BuilderWorkspace() {
         </div>
       </div>
 
-      {showPreview && <aside className="xl:block">
-        <Card className="sticky top-6 overflow-hidden border-border/70 bg-card/70">
+      <aside className={cn('min-w-0', showPreview ? 'block' : 'hidden', 'xl:block')}>
+        <Card className="overflow-hidden border-border/70 bg-card/70 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
           <CardHeader className="border-b border-border/60 pb-3"><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2 text-sm"><Palette className="size-4 text-primary" /> Live preview</CardTitle><Badge variant="outline">{config.window.width}×{config.window.height}</Badge></div></CardHeader>
           <CardContent className="p-3">
             <div className="overflow-hidden rounded-lg border border-border bg-background shadow-inner">
@@ -137,7 +153,7 @@ export function BuilderWorkspace() {
           </CardContent>
         </Card>
         <Card className="mt-4 border-border/70 bg-card/70"><CardHeader className="pb-3"><CardTitle className="text-sm">Quick presets</CardTitle></CardHeader><CardContent className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">{presets.map((preset) => { const PresetIcon = preset.icon; return <Button key={preset.name} variant="outline" className="h-auto justify-start gap-3 px-3 py-2 text-left" onClick={() => applyPreset(preset.patch)}><span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"><PresetIcon className="size-4" /></span><span className="min-w-0"><span className="block truncate text-xs font-semibold">{preset.name}</span><span className="block truncate text-[11px] font-normal text-muted-foreground">{preset.description}</span></span></Button> })}</CardContent></Card>
-      </aside>}
+      </aside>
     </div>
   )
 }
